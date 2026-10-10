@@ -203,7 +203,7 @@ Coding learners (trainees in AI content / coding training programs) who submit a
 
 ### Quality
 - [ ] All API endpoints documented in OpenAPI
-- [ ] Backend test coverage 80%+ (GitHub and Claude calls mocked)
+- [ ] Backend test coverage 80%+ (GitHub and OpenAI calls mocked)
 - [ ] Frontend TypeScript strict mode passes
 - [ ] Docker builds and runs successfully
 
@@ -235,7 +235,7 @@ Coding learners (trainees in AI content / coding training programs) who submit a
 | Agent | Role | Works On |
 |-------|------|----------|
 | DATABASE-AGENT | Creates all models and migrations | User, RefreshToken, Submission, Roast, ImprovementTip |
-| BACKEND-AGENT | Builds API endpoints and services | Auth, submissions, roasts, admin, GitHub and Claude services |
+| BACKEND-AGENT | Builds API endpoints and services | Auth, submissions, roasts, admin, GitHub and OpenAI services |
 | FRONTEND-AGENT | Creates UI pages and components | Auth pages, submit form, roast page, dashboard, admin |
 | DEVOPS-AGENT | Sets up Docker, CI/CD, environments | Infrastructure |
 | TEST-AGENT | Writes unit and integration tests | All code |

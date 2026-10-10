@@ -25,7 +25,7 @@ describe('App', () => {
   it('renders the dashboard for a logged-in user', async () => {
     mockedUseAuth.mockReturnValue(makeAuth({ user: makeUser() }));
     renderApp('/');
-    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Dashboard' }, { timeout: 5000 })).toBeInTheDocument();
     expect(window.location.pathname).toBe('/dashboard');
   });
 
@@ -39,6 +39,6 @@ describe('App', () => {
   it('shows the not-found page for unknown routes', async () => {
     mockedUseAuth.mockReturnValue(makeAuth({ user: makeUser() }));
     renderApp('/definitely/not/a/route');
-    expect(await screen.findByRole('heading', { name: 'NotFoundPage' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
   });
 });

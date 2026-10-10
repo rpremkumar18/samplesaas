@@ -16,15 +16,23 @@ REFRESH = "refresh"
 OAUTH_STATE = "oauth_state"
 
 
+BCRYPT_MAX_BYTES = 72
+
+
+def _password_bytes(password: str) -> bytes:
+    """Encode a password, truncated to bcrypt's 72-byte limit (bcrypt 5 raises above it)."""
+    return password.encode("utf-8")[:BCRYPT_MAX_BYTES]
+
+
 def hash_password(password: str) -> str:
     """Hash a plain password with bcrypt."""
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    return bcrypt.hashpw(_password_bytes(password), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(password: str, hashed: str) -> bool:
     """Check a plain password against a bcrypt hash."""
     try:
-        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+        return bcrypt.checkpw(_password_bytes(password), hashed.encode("utf-8"))
     except ValueError:
         return False
 
@@ -71,7 +79,10 @@ def decode_token(token: str, expected_type: str) -> dict[str, Any]:
     settings = get_settings()
     try:
         payload: dict[str, Any] = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+            options={"require": ["exp", "sub", "type"]},
         )
     except jwt.PyJWTError as exc:
         raise UnauthorizedError("Invalid or expired token") from exc

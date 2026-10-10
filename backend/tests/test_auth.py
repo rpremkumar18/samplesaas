@@ -340,3 +340,27 @@ def test_failed_login_throttle_429_and_reset_on_success(client: TestClient) -> N
     # other emails unaffected
     r = client.post(f"{API}/login", json={"email": "other@test.com", "password": "x"})
     assert r.status_code == 401
+
+
+def test_long_password_over_72_bytes_registers_and_logs_in(client: TestClient) -> None:
+    password = "é" * 60  # 120 bytes, within the 128-char schema limit
+    reg = client.post(
+        "/api/v1/auth/register",
+        json={"email": "long@example.com", "password": password, "full_name": "Long"},
+    )
+    assert reg.status_code == 201
+    login = client.post("/api/v1/auth/login", json={"email": "long@example.com", "password": password})
+    assert login.status_code == 200
+
+
+def test_token_without_exp_is_rejected() -> None:
+    import jwt as pyjwt
+
+    from app.auth.jwt import ACCESS, decode_token
+    from app.config import get_settings
+    from app.exceptions import UnauthorizedError
+
+    settings = get_settings()
+    token = pyjwt.encode({"sub": "1", "type": ACCESS}, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    with pytest.raises(UnauthorizedError):
+        decode_token(token, ACCESS)
