@@ -1,1 +1,1 @@
-"""Authentication: JWT and Google OAuth."""
+"""Authentication: JWT and GitHub OAuth."""

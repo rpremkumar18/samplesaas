@@ -14,7 +14,7 @@ const ORDER: TipCategory[] = ['bugs', 'security', 'structure', 'naming', 'readab
 
 export function TipList({ tips }: { tips: ImprovementTip[] }) {
   if (tips.length === 0) {
-    return <Text color="gray.400">No tips this time. Suspiciously clean!</Text>;
+    return <Text color="fg.muted">No tips this time. Suspiciously clean!</Text>;
   }
   const groups = ORDER.map((cat) => ({ cat, items: tips.filter((t) => t.category === cat) })).filter(
     (g) => g.items.length > 0,
@@ -28,12 +28,12 @@ export function TipList({ tips }: { tips: ImprovementTip[] }) {
           </Badge>
           <Stack gap={3}>
             {items.map((tip) => (
-              <Box key={tip.id} p={4} rounded="xl" bg="whiteAlpha.100" borderWidth="1px" borderColor="whiteAlpha.200">
+              <Box key={tip.id} p={4} rounded="xl" bg="bg.subtle" borderWidth="1px" borderColor="border">
                 <HStack justify="space-between" align="start" wrap="wrap" gap={2}>
                   <Heading size="sm">{tip.title}</Heading>
                   {tip.file_path && <Code fontSize="xs">{tip.file_path}</Code>}
                 </HStack>
-                <Text mt={2} color="gray.300" whiteSpace="pre-wrap">
+                <Text mt={2} color="fg.muted" whiteSpace="pre-wrap">
                   {tip.description}
                 </Text>
               </Box>

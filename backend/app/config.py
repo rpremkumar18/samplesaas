@@ -23,10 +23,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    GOOGLE_CLIENT_ID: str = ""
-    GOOGLE_CLIENT_SECRET: str = ""
+    # GitHub OAuth app used for login (GITHUB_TOKEN below is a separate server token).
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    # GitHub OAuth app (login). GITHUB_TOKEN below is a separate server token for reading repos.
     # Where the SPA is served (OAuth redirects go here) and the public base URL of this API
-    # (used to build the Google redirect_uri instead of trusting the Host header).
+    # (used to build the OAuth redirect_uri instead of trusting the Host header).
     FRONTEND_URL: str = "http://localhost:3000"
     BACKEND_PUBLIC_URL: str = "http://localhost:8000"
 

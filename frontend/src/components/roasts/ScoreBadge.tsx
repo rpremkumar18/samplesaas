@@ -39,7 +39,7 @@ export function ScoreBadge({ score, size = 'lg' }: ScoreBadgeProps) {
         {score}
       </Text>
       {big && (
-        <Text fontSize="sm" color="gray.400">
+        <Text fontSize="sm" color="fg.muted">
           / 100
         </Text>
       )}

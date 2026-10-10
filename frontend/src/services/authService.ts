@@ -3,7 +3,7 @@ import type { LoginRequest, RegisterRequest, TokenPair, UpdateProfileRequest, Us
 
 const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
-export const GOOGLE_LOGIN_URL = `${API_URL}/api/v1/auth/google`;
+export const GITHUB_LOGIN_URL = `${API_URL}/api/v1/auth/github`;
 
 export async function loginRequest(payload: LoginRequest): Promise<TokenPair> {
   const { data } = await api.post<TokenPair>('/auth/login', payload);

@@ -22,7 +22,7 @@ from app.rate_limit import limiter
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
-ROUTER_MODULES = ["auth", "submissions", "roasts", "admin"]
+ROUTER_MODULES = ["auth", "submissions", "roasts", "repos"]
 SWEEP_INTERVAL_SECONDS = 300
 
 

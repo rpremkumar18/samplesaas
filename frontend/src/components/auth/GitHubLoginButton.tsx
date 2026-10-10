@@ -1,10 +1,10 @@
 import { chakra } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { GOOGLE_LOGIN_URL } from '../../services/authService';
+import { GITHUB_LOGIN_URL } from '../../services/authService';
 
 const MotionButton = motion.create(chakra.button);
 
-export function GoogleLoginButton({ label = 'Continue with Google' }: { label?: string }) {
+export function GitHubLoginButton({ label = 'Continue with GitHub' }: { label?: string }) {
   return (
     <MotionButton
       type="button"
@@ -14,12 +14,12 @@ export function GoogleLoginButton({ label = 'Continue with Google' }: { label?: 
       py={3}
       rounded="full"
       borderWidth="1px"
-      borderColor="gray.300"
-      bg="white"
-      color="gray.800"
+      borderColor="border.emphasized"
+      bg={{ base: 'white', _dark: 'whiteAlpha.100' }}
+      color="fg"
       fontWeight="semibold"
       cursor="pointer"
-      onClick={() => window.location.assign(GOOGLE_LOGIN_URL)}
+      onClick={() => window.location.assign(GITHUB_LOGIN_URL)}
     >
       {label}
     </MotionButton>

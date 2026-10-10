@@ -25,7 +25,7 @@ cd my-saas
 
 ## What You Get
 
-- FastAPI backend with JWT + Google OAuth
+- FastAPI backend with JWT + GitHub OAuth (sign in with GitHub, pick a repo, get roasted)
 - React frontend with modern UI (Framer Motion)
 - PostgreSQL database with migrations
 - Docker + CI/CD ready
@@ -94,7 +94,7 @@ Phase 3 (Parallel):
 - **Backend:** FastAPI + Python 3.11+
 - **Frontend:** React + TypeScript + Vite
 - **Database:** PostgreSQL + SQLAlchemy
-- **Auth:** JWT + Google OAuth
+- **Auth:** JWT + GitHub OAuth (sign in with GitHub, pick a repo, get roasted)
 - **UI:** Chakra UI or Tailwind + Framer Motion
 - **Deploy:** Docker + GitHub Actions
 

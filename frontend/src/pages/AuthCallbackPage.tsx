@@ -44,8 +44,8 @@ export default function AuthCallbackPage() {
   return (
     <Center minH="100vh">
       <Stack align="center" gap={3}>
-        <Spinner size="xl" color="purple.500" />
-        <Text color="gray.600">Signing you in...</Text>
+        <Spinner size="xl" color={{ base: 'purple.600', _dark: 'purple.300' }} />
+        <Text color="fg.muted">Signing you in...</Text>
       </Stack>
     </Center>
   );

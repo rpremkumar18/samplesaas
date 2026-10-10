@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 STATE_COOKIE = "oauth_state_nonce"
-STATE_COOKIE_PATH = "/api/v1/auth/google"
+STATE_COOKIE_PATH = "/api/v1/auth/github"
 
 
 def _is_secure() -> bool:
@@ -105,10 +105,10 @@ def update_me(
     return auth_service.update_profile(db, user, body)
 
 
-@router.get("/google")
+@router.get("/github")
 @limiter.limit("20/minute")
-def google_login(request: Request) -> RedirectResponse:
-    """Redirect to Google's consent screen with a signed state."""
+def github_login(request: Request) -> RedirectResponse:
+    """Redirect to GitHub's authorization screen with a signed state."""
     nonce = secrets.token_urlsafe(16)
     url = oauth.build_authorization_url(oauth.redirect_uri(), create_state_token(nonce))
     response = RedirectResponse(url)
@@ -124,9 +124,9 @@ def google_login(request: Request) -> RedirectResponse:
     return response
 
 
-@router.get("/google/callback")
+@router.get("/github/callback")
 @limiter.limit("20/minute")
-def google_callback(
+def github_callback(
     request: Request,
     code: str | None = None,
     state: str | None = None,
@@ -153,12 +153,14 @@ def google_callback(
     try:
         profile = oauth.fetch_profile(code, oauth.redirect_uri())
     except AppError:
-        logger.warning("Google OAuth code exchange failed")
-        return _error_redirect("google_failed")
+        logger.warning("GitHub OAuth code exchange failed")
+        return _error_redirect("github_failed")
     if not profile.email_verified:
         return _error_redirect("email_unverified")
     try:
-        user = auth_service.get_or_create_google_user(db, profile.email, profile.full_name)
+        user = auth_service.get_or_create_github_user(
+            db, profile.email, profile.full_name, profile.login
+        )
     except AppError:
         return _error_redirect("account_unavailable")
     tokens = auth_service.issue_tokens(db, user)

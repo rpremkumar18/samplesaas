@@ -20,15 +20,15 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-development}
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-      # Behind nginx the API is reached via the frontend origin (port 3000), so Google's
-      # redirect URI is http://localhost:3000/api/v1/auth/google/callback
+      # Behind nginx the API is reached via the frontend origin (port 3000), so GitHub's
+      # redirect URI is http://localhost:3000/api/v1/auth/github/callback
       BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-6.1-sol}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       MAX_SUBMISSIONS_PER_DAY: ${MAX_SUBMISSIONS_PER_DAY:-20}
       MAX_IN_FLIGHT_PER_USER: ${MAX_IN_FLIGHT_PER_USER:-2}
       DAILY_ANALYSIS_BUDGET: ${DAILY_ANALYSIS_BUDGET:-500}

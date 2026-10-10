@@ -37,6 +37,8 @@ MAX_CANDIDATE_BYTES = 8 * 1024 * 1024  # text kept in memory while choosing file
 MAX_MEMBERS = 20_000
 REQUEST_TIMEOUT = 20.0
 TOO_LARGE_MESSAGE = "This repository is too large to analyze."
+MAX_LISTED_REPOS = 100
+GITHUB_LOGIN_RE = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})")
 
 SKIP_DIRS = frozenset(
     {"node_modules", "dist", "build", ".git", "venv", ".venv", "__pycache__", "vendor",
@@ -80,6 +82,17 @@ class _TooLargeError(Exception):
 
 
 @dataclass(frozen=True)
+class PublicRepo:
+    """Summary of a public repository for the repo picker."""
+
+    name: str
+    html_url: str
+    description: str | None = None
+    language: str | None = None
+    pushed_at: str | None = None
+
+
+@dataclass(frozen=True)
 class RepoFile:
     """A text file fetched from a repository."""
 
@@ -102,6 +115,11 @@ class RepoSnapshot:
     def is_partial(self) -> bool:
         """True when the model is not seeing the whole repository."""
         return bool(self.omitted_files or self.truncated_files or self.scan_incomplete)
+
+
+def _opt_str(value: object) -> str | None:
+    """Return ``value`` when it is a string, else None."""
+    return value if isinstance(value, str) else None
 
 
 def is_secret_file(path: str) -> bool:
@@ -296,6 +314,46 @@ class GitHubService:
         except ValueError as exc:
             raise ExternalServiceError("GitHub returned an unexpected error.") from exc
         return data if isinstance(data, dict) else {}
+
+    def list_public_repos(self, login: str, limit: int = MAX_LISTED_REPOS) -> list[PublicRepo]:
+        """Return a user's public, non-fork, non-archived repos, most recently pushed first."""
+        if not GITHUB_LOGIN_RE.fullmatch(login):
+            raise NotFoundError("GitHub username is invalid.")
+        url = f"/users/{quote(login, safe='')}/repos"
+        try:
+            response = self._client.get(
+                url,
+                params={"type": "owner", "sort": "pushed", "per_page": 100},
+                headers=self._headers(url, "application/vnd.github+json"),
+                timeout=REQUEST_TIMEOUT,
+            )
+        except httpx.HTTPError as exc:
+            logger.warning("GitHub request failed: %s", type(exc).__name__)
+            raise ExternalServiceError("Could not reach GitHub. Please try again later.") from exc
+        self._raise_for_status(response)
+        try:
+            data = response.json()
+        except ValueError as exc:
+            raise ExternalServiceError("GitHub returned an unexpected error.") from exc
+        repos: list[PublicRepo] = []
+        for item in data if isinstance(data, list) else []:
+            if not isinstance(item, dict) or item.get("private") or item.get("fork"):
+                continue
+            if item.get("archived") or item.get("disabled"):
+                continue
+            name, html_url = item.get("name"), item.get("html_url")
+            if not isinstance(name, str) or not isinstance(html_url, str):
+                continue
+            repos.append(
+                PublicRepo(
+                    name=name,
+                    html_url=html_url,
+                    description=_opt_str(item.get("description")),
+                    language=_opt_str(item.get("language")),
+                    pushed_at=_opt_str(item.get("pushed_at")),
+                )
+            )
+        return repos[:limit]
 
     def fetch_repo_files(
         self, owner: str, repo: str, deadline: float | None = None

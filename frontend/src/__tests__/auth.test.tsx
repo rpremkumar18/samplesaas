@@ -7,7 +7,6 @@ import { storeTokens } from '../services/api';
 import { LoginForm } from '../components/auth/LoginForm';
 import { RegisterForm } from '../components/auth/RegisterForm';
 import { ProtectedRoute } from '../components/ProtectedRoute';
-import { AdminRoute } from '../components/AdminRoute';
 import { useAuth } from '../hooks/useAuth';
 import { makeAuth, makeUser, renderWithProviders } from '../test/utils';
 
@@ -18,8 +17,8 @@ vi.mock('../services/api', async (importOriginal) => ({
 }));
 const mockedUseAuth = vi.mocked(useAuth);
 
-function routes(guard: 'protected' | 'admin') {
-  const Guard = guard === 'protected' ? ProtectedRoute : AdminRoute;
+function routes() {
+  const Guard = ProtectedRoute;
   return (
     <Routes>
       <Route path="/login" element={<div>login-page</div>} />
@@ -189,42 +188,21 @@ describe('RegisterForm', () => {
 describe('ProtectedRoute', () => {
   it('redirects anonymous users to /login', () => {
     mockedUseAuth.mockReturnValue(makeAuth({ user: null }));
-    renderWithProviders(routes('protected'), { route: '/secret' });
+    renderWithProviders(routes(), { route: '/secret' });
     expect(screen.getByText('login-page')).toBeInTheDocument();
     expect(screen.queryByText('secret-content')).not.toBeInTheDocument();
   });
 
   it('renders children for a logged-in user', () => {
     mockedUseAuth.mockReturnValue(makeAuth({ user: makeUser() }));
-    renderWithProviders(routes('protected'), { route: '/secret' });
+    renderWithProviders(routes(), { route: '/secret' });
     expect(screen.getByText('secret-content')).toBeInTheDocument();
   });
 
   it('renders neither content nor redirect while loading', () => {
     mockedUseAuth.mockReturnValue(makeAuth({ user: null, isLoading: true }));
-    renderWithProviders(routes('protected'), { route: '/secret' });
+    renderWithProviders(routes(), { route: '/secret' });
     expect(screen.queryByText('secret-content')).not.toBeInTheDocument();
     expect(screen.queryByText('login-page')).not.toBeInTheDocument();
-  });
-});
-
-describe('AdminRoute', () => {
-  it('redirects anonymous users to /login', () => {
-    mockedUseAuth.mockReturnValue(makeAuth({ user: null }));
-    renderWithProviders(routes('admin'), { route: '/secret' });
-    expect(screen.getByText('login-page')).toBeInTheDocument();
-  });
-
-  it('redirects non-admins to /dashboard', () => {
-    mockedUseAuth.mockReturnValue(makeAuth({ user: makeUser({ is_admin: false }) }));
-    renderWithProviders(routes('admin'), { route: '/secret' });
-    expect(screen.getByText('dashboard-page')).toBeInTheDocument();
-    expect(screen.queryByText('secret-content')).not.toBeInTheDocument();
-  });
-
-  it('renders children for admins', () => {
-    mockedUseAuth.mockReturnValue(makeAuth({ user: makeUser({ is_admin: true }) }));
-    renderWithProviders(routes('admin'), { route: '/secret' });
-    expect(screen.getByText('secret-content')).toBeInTheDocument();
   });
 });

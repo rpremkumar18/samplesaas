@@ -18,19 +18,17 @@ const LINKS: NavItem[] = [
 ];
 
 export function AppLayout() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   useEffect(() => {
     applyMode(readStoredMode());
   }, []);
 
-  const links = user?.is_admin ? [...LINKS, { to: '/admin', label: 'Admin' }] : LINKS;
-
   return (
     <Box>
-      <Flex as="nav" align="center" justify="space-between" wrap="wrap" gap={2} px={6} py={3} borderBottomWidth="1px">
+      <Flex as="nav" align="center" justify="space-between" wrap="wrap" gap={2} px={6} py={3} borderBottomWidth="1px" bg="bg.panel">
         <HStack gap={4} wrap="wrap">
-          {links.map((l) => (
+          {LINKS.map((l) => (
             <NavLink key={l.to} to={l.to} end={l.to === '/submissions'}>
               {({ isActive }) => <Box fontWeight={isActive ? 'bold' : 'normal'}>{l.label}</Box>}
             </NavLink>

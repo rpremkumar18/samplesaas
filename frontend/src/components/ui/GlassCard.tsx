@@ -13,13 +13,14 @@ export function GlassCard({ children, ...rest }: GlassCardProps) {
     <MotionBox
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02, y: -5 }}
+      whileHover={{ y: -2 }}
       p={6}
       rounded="2xl"
-      bg="whiteAlpha.100"
+      bg={{ base: 'whiteAlpha.900', _dark: 'whiteAlpha.100' }}
+      color="fg"
       backdropFilter="blur(16px)"
       borderWidth="1px"
-      borderColor="whiteAlpha.300"
+      borderColor={{ base: 'blackAlpha.200', _dark: 'whiteAlpha.300' }}
       shadow="xl"
       {...rest}
     >

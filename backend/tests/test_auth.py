@@ -146,26 +146,26 @@ def test_inactive_user_token_rejected(
     assert client.get(f"{API}/me", headers=auth_headers).status_code == 401
 
 
-def test_google_login_not_configured(client: TestClient) -> None:
+def test_github_login_not_configured(client: TestClient) -> None:
     with patch("app.auth.oauth.get_settings") as gs:
-        gs.return_value.GOOGLE_CLIENT_ID = ""
-        r = client.get(f"{API}/google", follow_redirects=False)
+        gs.return_value.GITHUB_CLIENT_ID = ""
+        r = client.get(f"{API}/github", follow_redirects=False)
     assert r.status_code == 400
 
 
-def test_google_login_redirect_sets_cookie(client: TestClient) -> None:
+def test_github_login_redirect_sets_cookie(client: TestClient) -> None:
     with patch("app.auth.oauth.get_settings") as gs:
-        gs.return_value.GOOGLE_CLIENT_ID = "cid"
+        gs.return_value.GITHUB_CLIENT_ID = "cid"
         gs.return_value.BACKEND_PUBLIC_URL = "https://api.example.com/"
-        r = client.get(f"{API}/google", follow_redirects=False, headers={"Host": "evil.test"})
+        r = client.get(f"{API}/github", follow_redirects=False, headers={"Host": "evil.test"})
     assert r.status_code in (302, 307)
     assert r.headers["location"].startswith(oauth.AUTH_URL)
     cookie = r.headers["set-cookie"]
     assert "oauth_state_nonce" in cookie
-    assert "Path=/api/v1/auth/google" in cookie
+    assert "Path=/api/v1/auth/github" in cookie
     # redirect_uri comes from config, never from the Host header (M9)
     redirect_uri = parse_qs(urlparse(r.headers["location"]).query)["redirect_uri"][0]
-    assert redirect_uri == "https://api.example.com/api/v1/auth/google/callback"
+    assert redirect_uri == "https://api.example.com/api/v1/auth/github/callback"
 
 
 def _error_code(r) -> str:  # type: ignore[no-untyped-def]
@@ -173,21 +173,21 @@ def _error_code(r) -> str:  # type: ignore[no-untyped-def]
     loc = urlparse(r.headers["location"])
     assert loc.path == "/login"
     assert "oauth_state_nonce" in r.headers["set-cookie"]  # cookie deletion header present
-    assert "Path=/api/v1/auth/google" in r.headers["set-cookie"]
+    assert "Path=/api/v1/auth/github" in r.headers["set-cookie"]
     return parse_qs(loc.query)["error"][0]
 
 
 def _get_callback(client: TestClient, **params: str):  # type: ignore[no-untyped-def]
-    return client.get(f"{API}/google/callback", params=params, follow_redirects=False)
+    return client.get(f"{API}/github/callback", params=params, follow_redirects=False)
 
 
-def test_google_callback_state_mismatch(client: TestClient) -> None:
+def test_github_callback_state_mismatch(client: TestClient) -> None:
     client.cookies.set("oauth_state_nonce", "cookie-nonce")
     r = _get_callback(client, code="c", state=create_state_token("different-nonce"))
     assert _error_code(r) == "invalid_state"
 
 
-def test_google_callback_missing_cookie_bad_state_and_denied(client: TestClient) -> None:
+def test_github_callback_missing_cookie_bad_state_and_denied(client: TestClient) -> None:
     assert _error_code(_get_callback(client, code="c", state=create_state_token("n"))) == (
         "invalid_state"
     )
@@ -195,63 +195,64 @@ def test_google_callback_missing_cookie_bad_state_and_denied(client: TestClient)
     assert _error_code(_get_callback(client, error="access_denied")) == "access_denied"
 
 
-def test_google_callback_exchange_failure_redirects(client: TestClient) -> None:
+def test_github_callback_exchange_failure_redirects(client: TestClient) -> None:
     client.cookies.set("oauth_state_nonce", "n1")
     with patch("app.routers.auth.oauth.fetch_profile", side_effect=BadRequestError("x")):
         r = _get_callback(client, code="c", state=create_state_token("n1"))
-    assert _error_code(r) == "google_failed"
+    assert _error_code(r) == "github_failed"
 
 
-def _callback(client: TestClient, profile: oauth.GoogleProfile):  # type: ignore[no-untyped-def]
+def _callback(client: TestClient, profile: oauth.GitHubProfile):  # type: ignore[no-untyped-def]
     client.cookies.set("oauth_state_nonce", "n1")
     state = create_state_token("n1")
     with patch("app.routers.auth.oauth.fetch_profile", new=MagicMock(return_value=profile)):
         return client.get(
-            f"{API}/google/callback", params={"code": "c", "state": state}, follow_redirects=False
+            f"{API}/github/callback", params={"code": "c", "state": state}, follow_redirects=False
         )
 
 
-def test_google_callback_success_uses_fragment(client: TestClient, db: Session) -> None:
-    r = _callback(client, oauth.GoogleProfile("g@example.com", "G", True))
+def test_github_callback_success_uses_fragment(client: TestClient, db: Session) -> None:
+    r = _callback(client, oauth.GitHubProfile("g@example.com", "G", True, "octocat"))
     assert r.status_code in (302, 307)
     loc = urlparse(r.headers["location"])
     assert loc.path == "/auth/callback"
     assert loc.query == ""  # nothing in the query string (M2)
     frag = parse_qs(loc.fragment)
     assert frag["access_token"][0] and frag["refresh_token"][0]
-    assert "Path=/api/v1/auth/google" in r.headers["set-cookie"]
+    assert "Path=/api/v1/auth/github" in r.headers["set-cookie"]
     created = db.query(User).filter_by(email="g@example.com").one()
-    assert created.oauth_provider == "google"
+    assert created.oauth_provider == "github"
+    assert created.github_login == "octocat"
 
 
-def test_google_callback_unverified_email(client: TestClient) -> None:
-    r = _callback(client, oauth.GoogleProfile("g@example.com", "G", False))
+def test_github_callback_unverified_email(client: TestClient) -> None:
+    r = _callback(client, oauth.GitHubProfile("g@example.com", "G", False))
     assert _error_code(r) == "email_unverified"
 
 
-def test_google_links_existing_verified_account_keeps_password(
+def test_github_links_existing_verified_account_keeps_password(
     client: TestClient, user: User, db: Session
 ) -> None:
     user.is_verified = True  # type: ignore[assignment]
     db.commit()
-    r = _callback(client, oauth.GoogleProfile("user@example.com", "G", True))
+    r = _callback(client, oauth.GitHubProfile("user@example.com", "G", True))
     assert r.status_code in (302, 307)
     db.refresh(user)
-    assert user.oauth_provider == "google"
+    assert user.oauth_provider == "github"
     assert user.hashed_password is not None
 
 
-def test_google_link_unverified_account_clears_password_and_tokens(
+def test_github_link_unverified_account_clears_password_and_tokens(
     client: TestClient, db: Session
 ) -> None:
-    """M1: attacker pre-registers the victim's email; the Google link must lock them out."""
+    """M1: attacker pre-registers the victim's email; the GitHub link must lock them out."""
     _register(client, "victim@example.com")
     attacker = _login(client, "victim@example.com")
-    r = _callback(client, oauth.GoogleProfile("victim@example.com", "V", True))
+    r = _callback(client, oauth.GitHubProfile("victim@example.com", "V", True))
     assert r.status_code in (302, 307)
     victim = db.query(User).filter_by(email="victim@example.com").one()
     assert victim.hashed_password is None
-    assert victim.is_verified is True and victim.oauth_provider == "google"
+    assert victim.is_verified is True and victim.oauth_provider == "github"
     # attacker's password no longer works, with the same generic 401 as an unknown email
     bad = client.post(f"{API}/login", json={"email": "victim@example.com", "password": PASSWORD})
     unknown = client.post(f"{API}/login", json={"email": "nobody@example.com", "password": PASSWORD})

@@ -26,7 +26,7 @@ export function SubmissionTable({ items, onDelete }: SubmissionTableProps) {
             <Table.Row key={s.id}>
               <Table.Cell>
                 <Link to={`/submissions/${s.id}`}>
-                  <Text color="purple.300" fontWeight="semibold">
+                  <Text color={{ base: 'purple.600', _dark: 'purple.300' }} fontWeight="semibold">
                     {s.repo_owner}/{s.repo_name}
                   </Text>
                 </Link>

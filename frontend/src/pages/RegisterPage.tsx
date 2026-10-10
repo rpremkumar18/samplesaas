@@ -15,7 +15,7 @@ export default function RegisterPage() {
       <Center minH="80vh">
         <GlassCard w="full" maxW="md">
           <Heading size="2xl" mb={1}>Create your account</Heading>
-          <Text color="gray.600" mb={6}>Join Assignment Roaster and level up your code.</Text>
+          <Text color="fg.muted" mb={6}>Join Assignment Roaster and level up your code.</Text>
           <RegisterForm />
         </GlassCard>
       </Center>

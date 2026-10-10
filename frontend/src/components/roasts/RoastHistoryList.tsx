@@ -24,10 +24,10 @@ export function RoastHistoryList({ roasts }: { roasts: Roast[] }) {
                 <Heading size="md" truncate>
                   {r.assignment_title ?? r.repo_url}
                 </Heading>
-                <Text fontSize="xs" color="gray.400">
+                <Text fontSize="xs" color="fg.muted">
                   {new Date(r.created_at).toLocaleDateString()}
                 </Text>
-                <Text mt={1} color="gray.300">
+                <Text mt={1} color="fg.muted">
                   {snippet(r.summary)}
                 </Text>
               </Box>

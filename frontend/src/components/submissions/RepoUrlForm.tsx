@@ -42,7 +42,7 @@ export function RepoUrlForm({ onSubmit, submitting, serverError }: RepoUrlFormPr
             aria-invalid={urlError !== null}
           />
           {urlError && (
-            <Text color="red.300" fontSize="sm">
+            <Text color="fg.error" fontSize="sm">
               {urlError}
             </Text>
           )}
@@ -51,7 +51,7 @@ export function RepoUrlForm({ onSubmit, submitting, serverError }: RepoUrlFormPr
           <Text fontWeight="semibold">Assignment title (optional)</Text>
           <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Week 3 - Todo App" maxLength={200} />
         </Stack>
-        {serverError && <Text color="red.300">{serverError}</Text>}
+        {serverError && <Text color="fg.error">{serverError}</Text>}
         <GradientButton type="submit" disabled={submitting} opacity={submitting ? 0.6 : 1}>
           {submitting ? 'Submitting...' : 'Roast my code'}
         </GradientButton>

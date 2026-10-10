@@ -3,7 +3,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Stack, Text } from '@chakra-ui/react';
 import { AnimatedInput } from '../ui/AnimatedInput';
 import { GradientButton } from '../ui/GradientButton';
-import { GoogleLoginButton } from './GoogleLoginButton';
+import { GitHubLoginButton } from './GitHubLoginButton';
 import { useAuth } from '../../hooks/useAuth';
 import { getErrorMessage } from '../../services/authService';
 
@@ -58,15 +58,15 @@ export function RegisterForm() {
         <AnimatedInput label="Email" type="email" autoComplete="email" value={email} error={errors.email} onChange={(e) => setEmail(e.target.value)} />
         <AnimatedInput label="Password" type="password" autoComplete="new-password" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
         <AnimatedInput label="Confirm password" type="password" autoComplete="new-password" value={confirm} error={errors.confirm} onChange={(e) => setConfirm(e.target.value)} />
-        {formError ? <Text role="alert" color="red.500" fontSize="sm">{formError}</Text> : null}
+        {formError ? <Text role="alert" color="fg.error" fontSize="sm">{formError}</Text> : null}
         <GradientButton type="submit" disabled={submitting} opacity={submitting ? 0.7 : 1}>
           {submitting ? 'Creating account...' : 'Create account'}
         </GradientButton>
-        <Text textAlign="center" color="gray.500" fontSize="sm">or</Text>
-        <GoogleLoginButton label="Sign up with Google" />
+        <Text textAlign="center" color="fg.muted" fontSize="sm">or</Text>
+        <GitHubLoginButton label="Sign up with GitHub" />
         <Text textAlign="center" fontSize="sm">
           Already have an account?{' '}
-          <RouterLink to="/login"><Text as="span" color="purple.600" fontWeight="semibold">Sign in</Text></RouterLink>
+          <RouterLink to="/login"><Text as="span" color={{ base: 'purple.600', _dark: 'purple.300' }} fontWeight="semibold">Sign in</Text></RouterLink>
         </Text>
       </Stack>
     </form>

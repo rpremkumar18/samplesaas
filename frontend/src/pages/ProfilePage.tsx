@@ -12,7 +12,7 @@ export default function ProfilePage() {
         <Heading size="2xl" mb={6}>Your profile</Heading>
         <GlassCard>
           <HStack mb={4} gap={2}>
-            {user?.is_admin ? <Badge colorPalette="purple">Admin</Badge> : null}
+            {user?.github_login ? <Badge colorPalette="purple">@{user.github_login}</Badge> : null}
             {user?.oauth_provider ? <Badge colorPalette="blue">{user.oauth_provider}</Badge> : null}
             {user?.is_verified ? <Badge colorPalette="green">Verified</Badge> : null}
           </HStack>

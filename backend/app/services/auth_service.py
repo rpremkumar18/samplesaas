@@ -115,7 +115,7 @@ def authenticate(db: Session, email: str, password: str) -> User:
     key = email.lower()
     _check_throttle(key)
     user = get_user_by_email(db, key)
-    # Accounts without a password (Google-only, or cleared by M1) take the same path and
+    # Accounts without a password (GitHub-only, or cleared by M1) take the same path and
     # run a dummy bcrypt so timing and the response are identical to wrong credentials.
     hashed = str(user.hashed_password) if user and user.hashed_password else _DUMMY_HASH
     valid = verify_password(password, hashed)
@@ -212,8 +212,10 @@ def update_profile(db: Session, user: User, data: UserUpdate) -> User:
     return user
 
 
-def get_or_create_google_user(db: Session, email: str, full_name: str | None) -> User:
-    """Find or create a user for a verified Google login, linking existing accounts.
+def get_or_create_github_user(
+    db: Session, email: str, full_name: str | None, github_login: str
+) -> User:
+    """Find or create a user for a verified GitHub login, linking existing accounts.
 
     Pre-hijack defence (M1): registration does not verify email ownership. If the existing
     password account is NOT verified, someone else may have registered it with a password
@@ -225,7 +227,8 @@ def get_or_create_google_user(db: Session, email: str, full_name: str | None) ->
         user = User(
             email=email,
             full_name=full_name,
-            oauth_provider="google",
+            oauth_provider="github",
+            github_login=github_login,
             is_verified=True,
         )
         db.add(user)
@@ -237,7 +240,8 @@ def get_or_create_google_user(db: Session, email: str, full_name: str | None) ->
                 user.hashed_password = None  # type: ignore[assignment,unused-ignore]
             revoke_all_tokens(db, int(user.id))
         if user.oauth_provider is None:
-            user.oauth_provider = "google"  # type: ignore[assignment,unused-ignore]
+            user.oauth_provider = "github"  # type: ignore[assignment,unused-ignore]
+        user.github_login = github_login  # type: ignore[assignment,unused-ignore]
         user.is_verified = True  # type: ignore[assignment,unused-ignore]
     db.commit()
     db.refresh(user)

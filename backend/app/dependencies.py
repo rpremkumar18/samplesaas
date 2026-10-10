@@ -6,10 +6,10 @@ from sqlalchemy.orm import Session
 
 from app.auth.jwt import ACCESS, decode_token
 from app.database import get_db
-from app.exceptions import ForbiddenError, UnauthorizedError
+from app.exceptions import UnauthorizedError
 from app.models.user import User
 
-__all__ = ["get_db", "get_current_user", "require_admin"]
+__all__ = ["get_db", "get_current_user"]
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
@@ -29,11 +29,4 @@ def get_current_user(
     user = db.get(User, user_id)
     if user is None or not user.is_active:
         raise UnauthorizedError("Invalid or inactive user")
-    return user
-
-
-def require_admin(user: User = Depends(get_current_user)) -> User:
-    """Require an admin user, else 403."""
-    if not user.is_admin:
-        raise ForbiddenError("Admin access required")
     return user

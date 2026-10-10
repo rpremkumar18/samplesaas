@@ -21,11 +21,11 @@ export default function RoastHistoryPage() {
           </Alert.Root>
         )}
         {!loading && !error && roasts.length === 0 && (
-          <Text color="gray.400">No roasts yet. Submit an assignment to get roasted!</Text>
+          <Text color="fg.muted">No roasts yet. Submit an assignment to get roasted!</Text>
         )}
         {!loading && !error && roasts.length > 0 && (
           <>
-            <Text color="gray.400">{total} roast(s)</Text>
+            <Text color="fg.muted">{total} roast(s)</Text>
             <RoastHistoryList roasts={roasts} />
           </>
         )}

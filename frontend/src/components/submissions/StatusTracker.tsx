@@ -55,8 +55,8 @@ export function StatusTracker({ status, timedOut = false, onRefresh }: StatusTra
           const isCurrent = !failed && i === current;
           return (
             <HStack key={step.key} gap={2}>
-              <Box w={3} h={3} rounded="full" bg={done ? 'green.400' : isCurrent ? 'purple.400' : 'whiteAlpha.300'} />
-              <Text fontSize="sm" color={isCurrent || done ? 'white' : 'gray.400'} fontWeight={isCurrent ? 'bold' : 'normal'}>
+              <Box w={3} h={3} rounded="full" bg={done ? 'green.400' : isCurrent ? 'purple.400' : 'border.emphasized'} />
+              <Text fontSize="sm" color={isCurrent || done ? 'fg' : 'fg.muted'} fontWeight={isCurrent ? 'bold' : 'normal'}>
                 {step.label}
               </Text>
             </HStack>
@@ -65,7 +65,7 @@ export function StatusTracker({ status, timedOut = false, onRefresh }: StatusTra
       </HStack>
       {active && timedOut && (
         <VStack align="stretch" gap={2}>
-          <Text color="orange.300">
+          <Text color={{ base: 'orange.600', _dark: 'orange.300' }}>
             This is taking longer than expected. The analysis may be stuck; refresh to check again.
           </Text>
           {onRefresh && (
@@ -77,8 +77,8 @@ export function StatusTracker({ status, timedOut = false, onRefresh }: StatusTra
       )}
       {active && !timedOut && (
         <HStack gap={3}>
-          <Spinner size="sm" color="purple.300" />
-          <Text color="gray.300">{quip}</Text>
+          <Spinner size="sm" color={{ base: 'purple.600', _dark: 'purple.300' }} />
+          <Text color="fg.muted">{quip}</Text>
         </HStack>
       )}
     </VStack>

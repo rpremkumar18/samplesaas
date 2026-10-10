@@ -15,7 +15,7 @@ export default function LoginPage() {
       <Center minH="80vh">
         <GlassCard w="full" maxW="md">
           <Heading size="2xl" mb={1}>Welcome back</Heading>
-          <Text color="gray.600" mb={6}>Sign in to get your assignment roasted.</Text>
+          <Text color="fg.muted" mb={6}>Sign in to get your assignment roasted.</Text>
           <LoginForm />
         </GlassCard>
       </Center>

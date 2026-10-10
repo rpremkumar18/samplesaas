@@ -62,7 +62,7 @@ class RateLimitError(AppError):
 
 
 class ExternalServiceError(AppError):
-    """Upstream service (GitHub, OpenAI, Google) failed."""
+    """Upstream service (GitHub, OpenAI) failed."""
 
     status_code = 502
     default_message = "Upstream service error"

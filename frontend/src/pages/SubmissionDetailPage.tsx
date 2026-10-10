@@ -18,7 +18,7 @@ export default function SubmissionDetailPage() {
       </Button>
       {loading && <Spinner />}
       {error && (
-        <Text color="red.300" mb={4}>
+        <Text color="fg.error" mb={4}>
           {error}
         </Text>
       )}
@@ -31,8 +31,8 @@ export default function SubmissionDetailPage() {
               </Heading>
               <StatusBadge status={submission.status} />
             </HStack>
-            {submission.assignment_title && <Text color="gray.300">{submission.assignment_title}</Text>}
-            <Text color="gray.400" fontSize="sm">
+            {submission.assignment_title && <Text color="fg.muted">{submission.assignment_title}</Text>}
+            <Text color="fg.muted" fontSize="sm">
               {submission.repo_url}
             </Text>
             <StatusTracker status={submission.status} timedOut={timedOut} onRefresh={refresh} />
@@ -43,7 +43,7 @@ export default function SubmissionDetailPage() {
             )}
             {submission.status === 'failed' && (
               <VStack align="stretch" gap={3}>
-                <Text color="red.300">{submission.error_message ?? 'The analysis failed for an unknown reason.'}</Text>
+                <Text color="fg.error">{submission.error_message ?? 'The analysis failed for an unknown reason.'}</Text>
                 <GradientButton onClick={() => void retry()} disabled={retrying} opacity={retrying ? 0.6 : 1}>
                   {retrying ? 'Retrying...' : 'Retry'}
                 </GradientButton>

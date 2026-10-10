@@ -13,8 +13,8 @@ export function makeUser(overrides: Partial<User> = {}): User {
     full_name: 'Test User',
     is_active: true,
     is_verified: true,
-    is_admin: false,
     oauth_provider: null,
+    github_login: null,
     created_at: '2025-01-01T00:00:00Z',
     ...overrides,
   };

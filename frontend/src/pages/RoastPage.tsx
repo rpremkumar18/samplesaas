@@ -30,7 +30,7 @@ export default function RoastPage() {
           <GlassCard>
             <Stack gap={3}>
               <Heading size="md">Roast not ready yet</Heading>
-              <Text color="gray.300">
+              <Text color="fg.muted">
                 The roast is still cooking. Check the submission page for progress, then come back.
               </Text>
               <HStack>
@@ -62,10 +62,10 @@ export default function RoastPage() {
                 <ScoreBadge score={roast.score} />
                 <Stack flex="1" minW="240px" gap={2}>
                   <Heading size="xl">{roast.assignment_title ?? 'Your assignment'}</Heading>
-                  <Text fontSize="sm" color="gray.400" wordBreak="break-all">
+                  <Text fontSize="sm" color="fg.muted" wordBreak="break-all">
                     {roast.repo_url}
                   </Text>
-                  {roast.summary && <Text color="gray.200">{roast.summary}</Text>}
+                  {roast.summary && <Text color="fg.muted">{roast.summary}</Text>}
                 </Stack>
               </HStack>
             </GlassCard>

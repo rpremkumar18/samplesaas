@@ -22,18 +22,18 @@ export default function ForgotPasswordPage() {
       <Center minH="80vh">
         <GlassCard w="full" maxW="md">
           <Heading size="2xl" mb={1}>Forgot password?</Heading>
-          <Text color="gray.600" mb={6}>Enter your email and we will help you get back in.</Text>
+          <Text color="fg.muted" mb={6}>Enter your email and we will help you get back in.</Text>
           <form onSubmit={onSubmit}>
             <Stack gap={4}>
               <AnimatedInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               <GradientButton type="submit">Send reset link</GradientButton>
               {submitted ? (
-                <Text role="status" color="purple.700" fontSize="sm">
+                <Text role="status" color={{ base: 'purple.600', _dark: 'purple.300' }} fontSize="sm">
                   Password reset is coming soon. For now, please contact your trainer to have your password reset.
                 </Text>
               ) : null}
               <RouterLink to="/login">
-                <Text as="span" color="purple.600" fontSize="sm">Back to sign in</Text>
+                <Text as="span" color={{ base: 'purple.600', _dark: 'purple.300' }} fontSize="sm">Back to sign in</Text>
               </RouterLink>
             </Stack>
           </form>

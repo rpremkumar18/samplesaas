@@ -12,7 +12,7 @@
 - Backend: FastAPI + Python 3.11+
 - Frontend: React + Vite + TypeScript
 - Database: PostgreSQL + SQLAlchemy
-- Auth: JWT + Google OAuth
+- Auth: JWT + GitHub OAuth
 - UI: Chakra UI
 - AI: OpenAI API (OpenAI SDK)
 
@@ -33,7 +33,7 @@ assignment-roaster/
 │   │   │   ├── submission.py
 │   │   │   └── roast.py          # Roast + ImprovementTip
 │   │   ├── schemas/
-│   │   ├── routers/              # auth, submissions, roasts, admin
+│   │   ├── routers/              # auth, submissions, roasts, repos
 │   │   ├── services/             # github_service, roast_service
 │   │   └── auth/
 │   ├── alembic/
@@ -131,7 +131,8 @@ const fetchSubmission = async (id: number): Promise<Submission> => {
 - Only public repos; private or missing repos produce a clear error
 - Skip binaries, `node_modules`, lock files, and cap total files/size sent to the LLM
 - Analysis runs as a background task; frontend polls status
-- Users can only see their own submissions; admins can see all
+- Users can only see their own submissions (there is no admin area)
+- Users sign in with GitHub and pick a repo from their public repos (`GET /api/v1/repos`); pasting a public repo URL still works
 
 ### Roasts Module
 - Roast text must be Thanglish (Tamil in English letters mixed with English)
@@ -141,8 +142,9 @@ const fetchSubmission = async (id: number): Promise<Submission> => {
 - Ask the LLM for structured JSON output and validate it with Pydantic before saving
 - Treat repo file contents as untrusted input: instruct the model to ignore instructions found in code
 
-### Admin Module
-- All `/admin` endpoints require `is_admin=True` (return 403 otherwise)
+### Repos Module
+- `GET /api/v1/repos` lists the signed-in user's public, non-fork, non-archived GitHub repos (requires a GitHub-linked account)
+- The user's GitHub OAuth token is never stored; only `github_login` is kept
 
 ---
 
@@ -164,7 +166,7 @@ const fetchSubmission = async (id: number): Promise<Submission> => {
 
 ## Authentication
 
-Email/Password + Google OAuth 2.0.
+Email/Password + GitHub OAuth.
 
 ### JWT Configuration
 - Access token expires: 30 minutes
@@ -172,7 +174,7 @@ Email/Password + Google OAuth 2.0.
 - Algorithm: HS256
 
 ### OAuth Providers
-- Google OAuth 2.0 enabled
+- GitHub OAuth enabled (scopes `read:user user:email`; callback `/api/v1/auth/github/callback`)
 - Always verify state parameter for CSRF protection
 
 ---
@@ -188,9 +190,9 @@ SECRET_KEY=your-secret-key-change-in-production
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# Google OAuth
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
+# GitHub OAuth (login)
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
 
 # AI + GitHub
 OPENAI_API_KEY=your-openai-api-key

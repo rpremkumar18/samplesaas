@@ -13,7 +13,7 @@ class User(Base, TimestampMixin):
     full_name = Column(String(100), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
-    is_admin = Column(Boolean, default=False, nullable=False)
+    github_login = Column(String(39), nullable=True, index=True)
     oauth_provider = Column(String(50), nullable=True)
 
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")

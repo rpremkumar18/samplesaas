@@ -67,12 +67,11 @@ def client() -> Generator[TestClient, None, None]:
     app.dependency_overrides.clear()
 
 
-def make_user(db: Session, email: str, admin: bool = False, active: bool = True) -> User:
+def make_user(db: Session, email: str, active: bool = True) -> User:
     user = User(
         email=email,
         hashed_password=hash_password(PASSWORD),
         full_name="Test User",
-        is_admin=admin,
         is_active=active,
     )
     db.add(user)
@@ -96,11 +95,6 @@ def other_user(db: Session) -> User:
 
 
 @pytest.fixture
-def admin(db: Session) -> User:
-    return make_user(db, "admin@example.com", admin=True)
-
-
-@pytest.fixture
 def auth_headers(user: User) -> dict[str, str]:
     return headers_for(user)
 
@@ -108,8 +102,3 @@ def auth_headers(user: User) -> dict[str, str]:
 @pytest.fixture
 def other_headers(other_user: User) -> dict[str, str]:
     return headers_for(other_user)
-
-
-@pytest.fixture
-def admin_headers(admin: User) -> dict[str, str]:
-    return headers_for(admin)

@@ -13,8 +13,16 @@ export function AnimatedInput({ label, error, ...props }: AnimatedInputProps) {
   return (
     <Field.Root invalid={Boolean(error)}>
       <Field.Label>{label}</Field.Label>
-      <MotionBox w="full" whileFocus={{ scale: 1.01 }} whileHover={{ y: -1 }}>
-        <Input bg="whiteAlpha.700" rounded="xl" borderColor="gray.300" _focusVisible={{ borderColor: 'purple.500' }} {...props} />
+      <MotionBox w="full" whileHover={{ y: -1 }}>
+        <Input
+          bg={{ base: 'white', _dark: 'whiteAlpha.100' }}
+          color="fg"
+          rounded="xl"
+          borderColor="border.emphasized"
+          _placeholder={{ color: 'fg.subtle' }}
+          _focusVisible={{ borderColor: 'purple.500' }}
+          {...props}
+        />
       </MotionBox>
       {error ? <Field.ErrorText>{error}</Field.ErrorText> : null}
     </Field.Root>

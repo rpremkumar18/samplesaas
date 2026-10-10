@@ -37,7 +37,7 @@ export default function SubmissionsPage() {
         </Button>
       </HStack>
       {actionError && (
-        <Text color="red.300" mb={4}>
+        <Text color="fg.error" mb={4}>
           {actionError}
         </Text>
       )}
@@ -57,9 +57,9 @@ export default function SubmissionsPage() {
         </GlassCard>
       )}
       {loading && <Spinner />}
-      {error && <Text color="red.300">{error}</Text>}
+      {error && <Text color="fg.error">{error}</Text>}
       {!loading && !error && items.length === 0 && (
-        <Text color="gray.400">Nothing here yet. Submit a repo and get roasted!</Text>
+        <Text color="fg.muted">Nothing here yet. Submit a repo and get roasted!</Text>
       )}
       {items.length > 0 && (
         <GlassCard>

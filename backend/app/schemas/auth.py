@@ -50,6 +50,6 @@ class UserRead(BaseModel):
     full_name: str | None
     is_active: bool
     is_verified: bool
-    is_admin: bool
     oauth_provider: str | None
+    github_login: str | None
     created_at: datetime

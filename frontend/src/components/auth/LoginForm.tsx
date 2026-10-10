@@ -3,7 +3,7 @@ import { Link as RouterLink, useLocation, useNavigate, useSearchParams } from 'r
 import { Box, Stack, Text } from '@chakra-ui/react';
 import { AnimatedInput } from '../ui/AnimatedInput';
 import { GradientButton } from '../ui/GradientButton';
-import { GoogleLoginButton } from './GoogleLoginButton';
+import { GitHubLoginButton } from './GitHubLoginButton';
 import { useAuth } from '../../hooks/useAuth';
 import { getErrorMessage } from '../../services/authService';
 
@@ -17,10 +17,10 @@ interface LoginErrors {
 }
 
 const OAUTH_ERROR_MESSAGES: Record<string, string> = {
-  access_denied: 'Google sign-in was cancelled. Please try again.',
+  access_denied: 'GitHub sign-in was cancelled. Please try again.',
   invalid_state: 'Your sign-in session expired or was invalid. Please try again.',
-  email_unverified: 'Your Google email address is not verified, so we could not sign you in.',
-  google_failed: 'Google sign-in failed. Please try again.',
+  email_unverified: 'Your GitHub email address is not verified, so we could not sign you in.',
+  github_failed: 'GitHub sign-in failed. Please try again.',
   account_unavailable: 'This account cannot sign in right now.',
 };
 
@@ -68,19 +68,19 @@ export function LoginForm() {
         <AnimatedInput label="Password" type="password" autoComplete="current-password" value={password} error={errors.password} onChange={(e) => setPassword(e.target.value)} />
         <Box textAlign="right">
           <RouterLink to="/forgot-password">
-            <Text as="span" fontSize="sm" color="purple.600">Forgot password?</Text>
+            <Text as="span" fontSize="sm" color={{ base: 'purple.600', _dark: 'purple.300' }}>Forgot password?</Text>
           </RouterLink>
         </Box>
-        {oauthError && !formError ? <Text role="alert" color="red.500" fontSize="sm">{oauthError}</Text> : null}
-        {formError ? <Text role="alert" color="red.500" fontSize="sm">{formError}</Text> : null}
+        {oauthError && !formError ? <Text role="alert" color="fg.error" fontSize="sm">{oauthError}</Text> : null}
+        {formError ? <Text role="alert" color="fg.error" fontSize="sm">{formError}</Text> : null}
         <GradientButton type="submit" disabled={submitting} opacity={submitting ? 0.7 : 1}>
           {submitting ? 'Signing in...' : 'Sign in'}
         </GradientButton>
-        <Text textAlign="center" color="gray.500" fontSize="sm">or</Text>
-        <GoogleLoginButton />
+        <Text textAlign="center" color="fg.muted" fontSize="sm">or</Text>
+        <GitHubLoginButton />
         <Text textAlign="center" fontSize="sm">
           New here?{' '}
-          <RouterLink to="/register"><Text as="span" color="purple.600" fontWeight="semibold">Create an account</Text></RouterLink>
+          <RouterLink to="/register"><Text as="span" color={{ base: 'purple.600', _dark: 'purple.300' }} fontWeight="semibold">Create an account</Text></RouterLink>
         </Text>
       </Stack>
     </form>

@@ -10,7 +10,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   if (isLoading) {
     return (
       <Center minH="100vh">
-        <Spinner size="xl" color="purple.500" />
+        <Spinner size="xl" color={{ base: 'purple.600', _dark: 'purple.300' }} />
       </Center>
     );
   }
