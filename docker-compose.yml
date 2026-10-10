@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-assignment_roaster}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-assignment_roaster}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      # Behind nginx the API is reached via the frontend origin (port 3000), so Google's
+      # redirect URI is http://localhost:3000/api/v1/auth/google/callback
+      BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-6.1-sol}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      MAX_SUBMISSIONS_PER_DAY: ${MAX_SUBMISSIONS_PER_DAY:-20}
+      MAX_IN_FLIGHT_PER_USER: ${MAX_IN_FLIGHT_PER_USER:-2}
+      DAILY_ANALYSIS_BUDGET: ${DAILY_ANALYSIS_BUDGET:-500}
+      STALE_SUBMISSION_MINUTES: ${STALE_SUBMISSION_MINUTES:-15}
+      PIPELINE_TIMEOUT_SECONDS: ${PIPELINE_TIMEOUT_SECONDS:-300}
+    command: sh -c "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Loopback only: uvicorn trusts X-Forwarded-For from any peer, so never publish publicly.
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Empty => relative /api/v1 through nginx. Distinct from the local-dev VITE_API_URL.
+        VITE_API_URL: ${DOCKER_VITE_API_URL:-}
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
