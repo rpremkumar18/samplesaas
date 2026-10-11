@@ -150,13 +150,14 @@ def test_github_login_not_configured(client: TestClient) -> None:
     with patch("app.auth.oauth.get_settings") as gs:
         gs.return_value.GITHUB_CLIENT_ID = ""
         r = client.get(f"{API}/github", follow_redirects=False)
-    assert r.status_code == 400
+    assert _error_code(r) == "not_configured"
 
 
 def test_github_login_redirect_sets_cookie(client: TestClient) -> None:
     with patch("app.auth.oauth.get_settings") as gs:
         gs.return_value.GITHUB_CLIENT_ID = "cid"
         gs.return_value.BACKEND_PUBLIC_URL = "https://api.example.com/"
+        gs.return_value.SECRET_KEY = "k" * 40
         r = client.get(f"{API}/github", follow_redirects=False, headers={"Host": "evil.test"})
     assert r.status_code in (302, 307)
     assert r.headers["location"].startswith(oauth.AUTH_URL)
@@ -365,3 +366,21 @@ def test_token_without_exp_is_rejected() -> None:
     token = pyjwt.encode({"sub": "1", "type": ACCESS}, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     with pytest.raises(UnauthorizedError):
         decode_token(token, ACCESS)
+
+
+def test_github_authorize_url_uses_pkce_and_least_privilege_scope(client: TestClient) -> None:
+    with patch("app.auth.oauth.get_settings") as gs:
+        gs.return_value.GITHUB_CLIENT_ID = "cid"
+        gs.return_value.BACKEND_PUBLIC_URL = "https://api.example.com"
+        gs.return_value.SECRET_KEY = "k" * 40
+        r = client.get(f"{API}/github", follow_redirects=False)
+    q = parse_qs(urlparse(r.headers["location"]).query)
+    assert q["scope"] == ["user:email"]
+    assert q["code_challenge_method"] == ["S256"]
+    nonce = r.cookies.get("oauth_state_nonce") or ""
+    assert nonce
+    with patch("app.auth.oauth.get_settings") as gs:
+        gs.return_value.SECRET_KEY = "k" * 40
+        verifier = oauth.pkce_verifier(nonce)
+    assert q["code_challenge"] == [oauth.pkce_challenge(verifier)]
+    assert len(verifier) == 43

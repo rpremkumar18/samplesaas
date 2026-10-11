@@ -20,6 +20,7 @@ const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   access_denied: 'GitHub sign-in was cancelled. Please try again.',
   invalid_state: 'Your sign-in session expired or was invalid. Please try again.',
   email_unverified: 'Your GitHub email address is not verified, so we could not sign you in.',
+  not_configured: 'GitHub sign-in is not set up yet. Please use email and password for now.',
   github_failed: 'GitHub sign-in failed. Please try again.',
   account_unavailable: 'This account cannot sign in right now.',
 };

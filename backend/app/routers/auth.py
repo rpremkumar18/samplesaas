@@ -110,7 +110,12 @@ def update_me(
 def github_login(request: Request) -> RedirectResponse:
     """Redirect to GitHub's authorization screen with a signed state."""
     nonce = secrets.token_urlsafe(16)
-    url = oauth.build_authorization_url(oauth.redirect_uri(), create_state_token(nonce))
+    try:
+        url = oauth.build_authorization_url(
+            oauth.redirect_uri(), create_state_token(nonce), nonce
+        )
+    except AppError:
+        return _error_redirect("not_configured")
     response = RedirectResponse(url)
     response.set_cookie(
         STATE_COOKIE,
@@ -151,7 +156,7 @@ def github_callback(
     ):
         return _error_redirect("invalid_state")
     try:
-        profile = oauth.fetch_profile(code, oauth.redirect_uri())
+        profile = oauth.fetch_profile(code, oauth.redirect_uri(), cookie_nonce)
     except AppError:
         logger.warning("GitHub OAuth code exchange failed")
         return _error_redirect("github_failed")

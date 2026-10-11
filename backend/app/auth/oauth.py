@@ -1,5 +1,8 @@
 """GitHub OAuth helpers (login only; the user's GitHub token is never stored)."""
 
+import base64
+import hashlib
+import hmac
 import logging
 from dataclasses import dataclass
 from urllib.parse import urlencode
@@ -33,17 +36,35 @@ def redirect_uri() -> str:
     return f"{base}/api/v1/auth/github/callback"
 
 
-def build_authorization_url(callback_url: str, state: str) -> str:
-    """Return the GitHub consent URL."""
+def pkce_verifier(nonce: str) -> str:
+    """Derive the PKCE code_verifier from the browser-bound nonce (HMAC with SECRET_KEY).
+
+    The verifier is never sent over the front channel and cannot be guessed without the
+    server secret, so a stolen authorization code is useless without the matching cookie.
+    """
+    key = get_settings().SECRET_KEY.encode("utf-8")
+    digest = hmac.new(key, f"pkce:{nonce}".encode(), hashlib.sha256).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+
+
+def pkce_challenge(verifier: str) -> str:
+    """S256 code_challenge for a verifier."""
+    digest = hashlib.sha256(verifier.encode("ascii")).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+
+
+def build_authorization_url(callback_url: str, state: str, nonce: str) -> str:
+    """Return the GitHub consent URL (state + PKCE S256)."""
     settings = get_settings()
     if not settings.GITHUB_CLIENT_ID:
         raise BadRequestError("GitHub login is not configured")
     params = {
         "client_id": settings.GITHUB_CLIENT_ID,
         "redirect_uri": callback_url,
-        "scope": "read:user user:email",
+        "scope": "user:email",  # least privilege: public profile needs no scope
         "state": state,
-        "allow_signup": "true",
+        "code_challenge": pkce_challenge(pkce_verifier(nonce)),
+        "code_challenge_method": "S256",
     }
     return f"{AUTH_URL}?{urlencode(params)}"
 
@@ -64,7 +85,7 @@ def _pick_email(emails: object) -> tuple[str, bool] | None:
     return None
 
 
-def fetch_profile(code: str, callback_url: str) -> GitHubProfile:
+def fetch_profile(code: str, callback_url: str, nonce: str) -> GitHubProfile:
     """Exchange an authorization code and fetch the user's profile (sync; run in threadpool)."""
     settings = get_settings()
     try:
@@ -77,6 +98,7 @@ def fetch_profile(code: str, callback_url: str) -> GitHubProfile:
                     "client_id": settings.GITHUB_CLIENT_ID,
                     "client_secret": settings.GITHUB_CLIENT_SECRET,
                     "redirect_uri": callback_url,
+                    "code_verifier": pkce_verifier(nonce),
                 },
             )
             if token_resp.status_code != 200:
