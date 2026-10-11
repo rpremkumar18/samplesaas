@@ -384,3 +384,13 @@ def test_github_authorize_url_uses_pkce_and_least_privilege_scope(client: TestCl
         verifier = oauth.pkce_verifier(nonce)
     assert q["code_challenge"] == [oauth.pkce_challenge(verifier)]
     assert len(verifier) == 43
+
+
+@pytest.mark.parametrize("send", [True, False])
+def test_github_redirect_uri_param_is_optional(send: bool) -> None:
+    with patch("app.auth.oauth.get_settings") as gs:
+        gs.return_value.GITHUB_CLIENT_ID = "cid"
+        gs.return_value.SECRET_KEY = "k" * 40
+        gs.return_value.GITHUB_OAUTH_SEND_REDIRECT_URI = send
+        url = oauth.build_authorization_url("https://x/cb", "st", "nonce")
+    assert ("redirect_uri" in parse_qs(urlparse(url).query)) is send

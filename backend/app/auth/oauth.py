@@ -60,12 +60,13 @@ def build_authorization_url(callback_url: str, state: str, nonce: str) -> str:
         raise BadRequestError("GitHub login is not configured")
     params = {
         "client_id": settings.GITHUB_CLIENT_ID,
-        "redirect_uri": callback_url,
         "scope": "user:email",  # least privilege: public profile needs no scope
         "state": state,
         "code_challenge": pkce_challenge(pkce_verifier(nonce)),
         "code_challenge_method": "S256",
     }
+    if settings.GITHUB_OAUTH_SEND_REDIRECT_URI:
+        params["redirect_uri"] = callback_url
     return f"{AUTH_URL}?{urlencode(params)}"
 
 
@@ -88,18 +89,18 @@ def _pick_email(emails: object) -> tuple[str, bool] | None:
 def fetch_profile(code: str, callback_url: str, nonce: str) -> GitHubProfile:
     """Exchange an authorization code and fetch the user's profile (sync; run in threadpool)."""
     settings = get_settings()
+    form = {
+        "code": code,
+        "client_id": settings.GITHUB_CLIENT_ID,
+        "client_secret": settings.GITHUB_CLIENT_SECRET,
+        "code_verifier": pkce_verifier(nonce),
+    }
+    if settings.GITHUB_OAUTH_SEND_REDIRECT_URI:
+        form["redirect_uri"] = callback_url
     try:
         with httpx.Client(timeout=10.0) as client:
             token_resp = client.post(
-                TOKEN_URL,
-                headers={"Accept": "application/json"},
-                data={
-                    "code": code,
-                    "client_id": settings.GITHUB_CLIENT_ID,
-                    "client_secret": settings.GITHUB_CLIENT_SECRET,
-                    "redirect_uri": callback_url,
-                    "code_verifier": pkce_verifier(nonce),
-                },
+                TOKEN_URL, headers={"Accept": "application/json"}, data=form
             )
             if token_resp.status_code != 200:
                 raise BadRequestError("GitHub authorization failed")

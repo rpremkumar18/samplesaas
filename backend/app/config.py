@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # GitHub OAuth app used for login (GITHUB_TOKEN below is a separate server token).
+    # False: omit redirect_uri so GitHub uses the callback registered on the OAuth App.
+    GITHUB_OAUTH_SEND_REDIRECT_URI: bool = True
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
     # GitHub OAuth app (login). GITHUB_TOKEN below is a separate server token for reading repos.
